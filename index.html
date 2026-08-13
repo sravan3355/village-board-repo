@@ -709,6 +709,19 @@
 
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
 
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+  window.submitRequest = submitRequest;
+  window.setFilter = setFilter;
+  window.setVillage = setVillage;
+  window.onSearch = onSearch;
+  window.selectCat = selectCat;
+  window.selectUrgency = selectUrgency;
+  window.toggleOffer = toggleOffer;
+  window.confirmOffer = confirmOffer;
+  window.markCompleted = markCompleted;
+  window.revealPhone = revealPhone;
+
   renderChips();
   renderVillageSelect();
   loadRequests();
