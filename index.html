@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Village Board</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..900&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root{
+    --bg:#F1ECDA;
+    --board-line:#d9cfab;
+    --ink:#2E2A1E;
+    --ink-soft:#5B5540;
+    --primary:#35563B;
+    --primary-dark:#233B27;
+    --secondary:#9C4A2B;
+    --accent:#D6A036;
+    --surface:#FFFBF0;
+    --line:#C9BFA0;
+    --danger:#8C3730;
+    --danger-bg:#f3e2dd;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Work Sans', sans-serif;
+    color:var(--ink);
+    background-color:var(--bg);
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, var(--board-line) 28px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.015), rgba(0,0,0,0.015) 1px, transparent 1px, transparent 3px);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Fraunces', serif; margin:0;}
+  button{font-family:inherit;}
+  .mono{font-family:'Space Mono', monospace;}
+
+  a, button{ cursor:pointer; }
+  :focus-visible{ outline:3px solid var(--accent); outline-offset:2px; }
+
+  /* ---------- Header ---------- */
+  header.hero{
+    background:
+      linear-gradient(180deg, var(--primary-dark), var(--primary) 140%);
+    padding:28px 20px 34px;
+    position:relative;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.12);
+  }
+  .hero-inner{ max-width:1040px; margin:0 auto; }
+  .eyebrow{
+    color:var(--accent);
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    margin:0 0 6px;
+  }
+  header.hero h1{
+    color:#FBF6E7;
+    font-size:clamp(30px, 5vw, 46px);
+    font-weight:700;
+    letter-spacing:.01em;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.25);
+  }
+  header.hero p.tag{
+    color:#CFE0CE;
+    font-size:15.5px;
+    max-width:520px;
+    margin:10px 0 22px;
+    line-height:1.5;
+  }
+  .stats-row{ display:flex; gap:22px; flex-wrap:wrap; }
+  .stat{
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.18);
+    border-radius:3px;
+    padding:8px 14px;
+    color:#F1ECDA;
+  }
+  .stat b{ font-family:'Space Mono',monospace; font-size:17px; color:var(--accent); display:block; }
+  .stat span{ font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:#CFE0CE; }
+
+  .post-btn{
+    position:absolute;
+    right:20px; bottom:-26px;
+    background:var(--secondary);
+    color:#FFF6EA;
+    border:none;
+    padding:16px 22px;
+    border-radius:3px;
+    font-weight:600;
+    font-size:15px;
+    box-shadow:0 4px 0 #6e3218, 0 6px 14px rgba(0,0,0,0.25);
+    display:flex; align-items:center; gap:8px;
+    transition:transform .12s ease;
+  }
+  .post-btn:hover{ transform:translateY(-2px); }
+  .post-btn:active{ transform:translateY(1px); box-shadow:0 2px 0 #6e3218; }
+  .post-btn svg{ width:16px; height:16px; }
+
+  @media (max-width:640px){
+    .post-btn{ position:static; margin-top:18px; width:100%; justify-content:center; }
+  }
+
+  /* ---------- Controls ---------- */
+  .controls{
+    max-width:1040px; margin:52px auto 0; padding:0 20px 6px;
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .search-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .search-box{
+    display:flex; align-items:center; gap:10px;
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    border-radius:3px;
+    padding:10px 14px;
+    flex:1 1 220px;
+  }
+  .search-box input{
+    border:none; outline:none; background:none; flex:1;
+    font-size:15px; color:var(--ink); font-family:inherit;
+  }
+  .search-box svg{ width:17px; height:17px; color:var(--ink-soft); flex-shrink:0; }
+
+  .village-select{
+    background:var(--primary);
+    color:#F5F1E1;
+    border:1.5px solid var(--primary-dark);
+    border-radius:3px;
+    padding:0 14px;
+    font-size:14.5px;
+    font-weight:600;
+    font-family:inherit;
+    flex:0 0 auto;
+    min-width:170px;
+  }
+
+  .village-badge{
+    font-family:'Space Mono', monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--secondary);
+    margin-bottom:6px;
+    display:block;
+  }
+
+  .chip-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .chip{
+    border:1.5px solid var(--line);
+    background:var(--surface);
+    color:var(--ink-soft);
+    padding:7px 13px;
+    border-radius:20px;
+    font-size:13.5px;
+    font-weight:500;
+    display:flex; align-items:center; gap:6px;
+    transition:all .12s ease;
+  }
+  .chip:hover{ border-color:var(--primary); }
+  .chip.active{
+    background:var(--primary);
+    border-color:var(--primary);
+    color:#F5F1E1;
+  }
+
+  /* ---------- Board ---------- */
+  main{ max-width:1040px; margin:0 auto; padding:26px 20px 80px; }
+  .board-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(266px, 1fr));
+    gap:26px 22px;
+    margin-top:8px;
+  }
+
+  .note{
+    background:var(--surface);
+    border:1px solid #EADFC0;
+    border-radius:3px 9px 4px 8px;
+    padding:20px 18px 16px;
+    position:relative;
+    box-shadow:
+      0 1px 0 rgba(0,0,0,0.03),
+      0 8px 16px -8px rgba(43,40,20,0.28);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .note:hover{ transform:translateY(-3px) rotate(0deg) !important; box-shadow:0 14px 22px -10px rgba(43,40,20,0.35); }
+  .note::before{
+    content:'';
+    position:absolute; top:-9px; left:50%; transform:translateX(-50%);
+    width:16px; height:16px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #ECC873, var(--accent) 60%, #9c7420 100%);
+    box-shadow:0 3px 4px rgba(0,0,0,0.35);
+  }
+  .note.completed{ opacity:.62; }
+  .note.completed .note-desc{ text-decoration:line-through; text-decoration-color:var(--ink-soft); }
+
+  .note-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:10px;}
+  .cat-stamp{
+    font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+    padding:4px 9px 4px 7px; border-radius:3px; display:inline-flex; align-items:center; gap:5px;
+    border:1.5px dashed currentColor;
+  }
+  .status-badge{
+    font-family:'Space Mono', monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em;
+    padding:3px 8px; border-radius:2px; white-space:nowrap;
+  }
+  .status-open{ background:#e8ede2; color:var(--primary-dark); }
+  .status-claimed{ background:#f7ecd4; color:#8a611c; }
+  .status-completed{ background:#e7e2d3; color:var(--ink-soft); }
+
+  .note h3{ font-size:18px; margin-bottom:4px; line-height:1.25; }
+  .note-desc{ font-size:14.5px; color:var(--ink-soft); line-height:1.5; margin-bottom:12px; }
+
+  .meta-row{ display:flex; flex-wrap:wrap; gap:6px 14px; font-size:12.5px; color:var(--ink-soft); margin-bottom:14px; }
+  .meta-row span{ display:flex; align-items:center; gap:5px; }
+  .meta-row svg{ width:13px; height:13px; opacity:.7; }
+
+  .phone-row{
+    display:flex; align-items:center; justify-content:space-between;
+    background:#F5F0DE; border:1px dashed var(--line); border-radius:3px;
+    padding:8px 10px; margin-bottom:12px; font-family:'Space Mono', monospace; font-size:13px;
+  }
+  .phone-row .reveal-btn{ background:none; border:none; color:var(--secondary); font-weight:700; font-size:12px; font-family:'Work Sans',sans-serif; }
+
+  .claimed-tag{
+    font-size:12.5px; color:#8a611c; background:#FCF4DE; border:1px solid #ecd9a3;
+    padding:7px 9px; border-radius:3px; margin-bottom:12px; line-height:1.4;
+  }
+
+  .note-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .btn-small{
+    flex:1; min-width:120px;
+    border:none; border-radius:3px; padding:9px 10px; font-size:13px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .btn-help{ background:var(--primary); color:#F1ECDA; }
+  .btn-help:hover{ background:var(--primary-dark); }
+  .btn-complete{ background:transparent; border:1.5px solid var(--line); color:var(--ink-soft); }
+  .btn-complete:hover{ border-color:var(--ink-soft); color:var(--ink); }
+
+  .inline-form{ margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); display:none; }
+  .inline-form.open{ display:block; }
+  .inline-form input{
+    width:100%; padding:8px 10px; margin-bottom:8px; border:1.5px solid var(--line); border-radius:3px;
+    font-size:13.5px; font-family:inherit; background:#fff;
+  }
+  .inline-form .row-btns{ display:flex; gap:8px; }
+  .inline-form .row-btns button{ flex:1; padding:8px; border-radius:3px; font-size:13px; font-weight:600; border:none; }
+  .confirm-offer{ background:var(--secondary); color:#fff; }
+  .cancel-offer{ background:transparent; border:1.5px solid var(--line) !important; color:var(--ink-soft); }
+
+  /* ---------- Empty / loading ---------- */
+  .empty-state{
+    text-align:center; padding:60px 20px; color:var(--ink-soft);
+  }
+  .empty-state h3{ font-size:20px; margin-bottom:6px; color:var(--ink); }
+  .skeleton-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(266px,1fr)); gap:22px; }
+  .skeleton{
+    height:190px; border-radius:6px;
+    background:linear-gradient(100deg, #e9e2c8 30%, #f3edd8 50%, #e9e2c8 70%);
+    background-size:200% 100%;
+    animation:shimmer 1.4s infinite;
+  }
+  @keyframes shimmer{ 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(30,26,15,0.55);
+    display:none; align-items:flex-start; justify-content:center;
+    padding:40px 16px; overflow-y:auto; z-index:50;
+  }
+  .overlay.open{ display:flex; }
+  .modal{
+    background:var(--surface); max-width:480px; width:100%;
+    border-radius:6px; padding:26px 24px 24px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.35);
+    animation:pop .18s ease;
+  }
+  @keyframes pop{ from{ transform:translateY(10px); opacity:0;} to{ transform:translateY(0); opacity:1; } }
+  .modal-head{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
+  .modal h2{ font-size:23px; }
+  .modal .sub{ font-size:13px; color:var(--ink-soft); margin:4px 0 18px; }
+  .close-x{ background:none; border:none; font-size:22px; color:var(--ink-soft); line-height:1; padding:2px; }
+
+  .field{ margin-bottom:15px; }
+  .field label{ display:block; font-size:12.5px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft); margin-bottom:6px; }
+  .field input, .field textarea{
+    width:100%; border:1.5px solid var(--line); border-radius:3px; padding:10px 11px;
+    font-size:14.5px; font-family:inherit; background:#fff; color:var(--ink); resize:vertical;
+  }
+  .field input:focus, .field textarea:focus{ border-color:var(--primary); }
+  .cat-select{ display:flex; flex-wrap:wrap; gap:7px; }
+  .cat-opt{
+    border:1.5px solid var(--line); background:#fff; padding:7px 11px; border-radius:20px;
+    font-size:13px; display:flex; align-items:center; gap:6px;
+  }
+  .cat-opt.selected{ background:var(--primary); border-color:var(--primary); color:#fff; }
+  .urgency-row{ display:flex; gap:7px; }
+  .urgency-row button{
+    flex:1; border:1.5px solid var(--line); background:#fff; padding:8px 4px; border-radius:3px; font-size:12.5px;
+  }
+  .urgency-row button.selected{ background:var(--accent); border-color:var(--accent); color:#3a2a06; font-weight:700; }
+
+  .submit-btn{
+    width:100%; background:var(--secondary); color:#fff; border:none; padding:13px; border-radius:3px;
+    font-size:15px; font-weight:700; margin-top:6px;
+  }
+  .submit-btn:hover{ background:#7c3a20; }
+  .privacy-note{ font-size:11.5px; color:var(--ink-soft); margin-top:10px; line-height:1.5; text-align:center; }
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--primary-dark); color:#F5F1E1; padding:12px 20px; border-radius:4px;
+    font-size:14px; opacity:0; pointer-events:none; transition:all .25s ease; z-index:60;
+    box-shadow:0 8px 20px rgba(0,0,0,0.3);
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.danger{ background:var(--danger); }
+
+  footer{ text-align:center; padding:20px; font-size:12px; color:var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow">Community notice board</p>
+    <h1>The Village Board</h1>
+    <p class="tag">Pin a request for a hand — a tractor for the field, help with cooking, washing, or kitchen work — and neighbors nearby can offer to help.</p>
+    <div class="stats-row" id="statsRow"></div>
+  </div>
+  <button class="post-btn" onclick="openModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+    Post a Request
+  </button>
+</header>
+
+<div class="controls">
+  <div class="search-row">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="searchInput" type="text" placeholder="Search requests, names, or areas..." oninput="onSearch(this.value)" />
+    </div>
+    <select id="villageSelect" class="village-select" onchange="setVillage(this.value)"></select>
+  </div>
+  <div class="chip-row" id="chipRow"></div>
+</div>
+
+<main>
+  <div id="boardContainer">
+    <div class="skeleton-grid">
+      <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+    </div>
+  </div>
+</main>
+
+<footer>Notices posted here are visible to everyone using this board.</footer>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="if(event.target===this) closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2>Pin a Request</h2>
+        <p class="sub">Tell the village what kind of help you need.</p>
+      </div>
+      <button class="close-x" onclick="closeModal()">&times;</button>
+    </div>
+    <form id="requestForm" onsubmit="submitRequest(event)">
+      <div class="field">
+        <label>Your Name</label>
+        <input type="text" id="f_name" required placeholder="e.g. Ramesh Patil" />
+      </div>
+      <div class="field">
+        <label>Phone Number</label>
+        <input type="tel" id="f_phone" required placeholder="e.g. 98765 43210" />
+      </div>
+      <div class="field">
+        <label>Village</label>
+        <select id="f_village" required>
+          <option value="" disabled selected>Choose your village</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Specific Location</label>
+        <input type="text" id="f_area" required placeholder="e.g. Near the well, East side" />
+      </div>
+      <div class="field">
+        <label>What kind of help?</label>
+        <div class="cat-select" id="catSelect"></div>
+      </div>
+      <div class="field">
+        <label>Describe what you need</label>
+        <textarea id="f_desc" required rows="3" placeholder="e.g. Need a tractor for ploughing 2 acres, this weekend"></textarea>
+      </div>
+      <div class="field">
+        <label>When do you need it?</label>
+        <div class="urgency-row" id="urgencyRow"></div>
+      </div>
+      <div class="field">
+        <label>Offering (optional)</label>
+        <input type="text" id="f_budget" placeholder="e.g. 300/day, or negotiable" />
+      </div>
+      <button type="submit" class="submit-btn">Pin to the Board</button>
+      <p class="privacy-note">Your name, phone number, and request will be visible to everyone who visits this board.</p>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ---- PASTE YOUR FIREBASE CONFIG HERE (see setup instructions) ----
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const boardRef = doc(db, "board", "village-requests");
+
+  const CATEGORIES = [
+    { key:'tractor', label:'Tractor & Farm Equipment', icon:'🚜', color:'#7A5A1E' },
+    { key:'cooking', label:'Cooking Help', icon:'🍲', color:'#9C4A2B' },
+    { key:'laundry', label:'Laundry & Washing', icon:'🧺', color:'#2E5C6E' },
+    { key:'kitchen', label:'Kitchen Work', icon:'🍽️', color:'#6B4C8A' },
+    { key:'cleaning', label:'House Cleaning', icon:'🧹', color:'#3C6B45' },
+    { key:'repair', label:'Repairs', icon:'🔧', color:'#5A5A2E' },
+    { key:'other', label:'Other', icon:'📌', color:'#5B5540' },
+  ];
+  const URGENCY = ['Today','This week','Flexible'];
+  const VILLAGES = ['Upllor','Kammerpally','Thimmapur','Yergatle'];
+
+  let state = { requests: [], filterCategory:'all', filterVillage:'all', search:'', loading:true, selectedCat:null, selectedUrgency:'This week' };
+
+  function catInfo(key){ return CATEGORIES.find(c=>c.key===key) || CATEGORIES[CATEGORIES.length-1]; }
+
+  function timeAgo(ts){
+    const s = Math.floor((Date.now()-ts)/1000);
+    if(s<60) return 'just now';
+    const m = Math.floor(s/60); if(m<60) return m+'m ago';
+    const h = Math.floor(m/60); if(h<24) return h+'h ago';
+    const d = Math.floor(h/24); if(d<7) return d+'d ago';
+    return new Date(ts).toLocaleDateString();
+  }
+
+  function rotFor(id){
+    let h=0; for(const c of id) h=(h*31 + c.charCodeAt(0)) % 997;
+    return ((h % 5) - 2) * 0.9; // -1.8..1.8 deg
+  }
+
+  function maskPhone(p){
+    const digits = p.replace(/\D/g,'');
+    if(digits.length<4) return p;
+    return digits.slice(0,2) + ' ' + '•'.repeat(Math.max(digits.length-4,2)) + ' ' + digits.slice(-2);
+  }
+
+  function showToast(msg, danger){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (danger? ' danger':'');
+    setTimeout(()=>{ t.className='toast'; }, 2600);
+  }
+
+  function loadRequests(){
+    onSnapshot(boardRef, (snap)=>{
+      state.requests = snap.exists() ? (snap.data().requests || []) : [];
+      state.loading = false;
+      renderBoard();
+    }, (err)=>{
+      console.error(err);
+      state.loading = false;
+      showToast('Could not connect to the board. Check your Firebase setup.', true);
+    });
+  }
+
+  async function saveRequests(){
+    try{
+      await setDoc(boardRef, { requests: state.requests });
+    }catch(e){
+      showToast('Could not save — please try again.', true);
+    }
+  }
+
+  function id(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+  function renderChips(){
+    const row = document.getElementById('chipRow');
+    const allChip = `<button class="chip ${state.filterCategory==='all'?'active':''}" onclick="setFilter('all')">All requests</button>`;
+    const chips = CATEGORIES.map(c => `<button class="chip ${state.filterCategory===c.key?'active':''}" onclick="setFilter('${c.key}')">${c.icon} ${c.label}</button>`).join('');
+    row.innerHTML = allChip + chips;
+  }
+
+  function renderVillageSelect(){
+    const sel = document.getElementById('villageSelect');
+    sel.innerHTML = `<option value="all">All Villages</option>` +
+      VILLAGES.map(v => `<option value="${v}">${v}</option>`).join('');
+  }
+
+  function setFilter(key){ state.filterCategory = key; renderChips(); renderBoard(); }
+  function setVillage(v){ state.filterVillage = v; renderBoard(); }
+  function onSearch(v){ state.search = v.toLowerCase(); renderBoard(); }
+
+  function renderStats(){
+    const open = state.requests.filter(r=>r.status==='open').length;
+    const claimed = state.requests.filter(r=>r.status==='claimed').length;
+    const done = state.requests.filter(r=>r.status==='completed').length;
+    document.getElementById('statsRow').innerHTML = `
+      <div class="stat"><b>${open}</b><span>Open Requests</span></div>
+      <div class="stat"><b>${claimed}</b><span>Being Helped</span></div>
+      <div class="stat"><b>${done}</b><span>Completed</span></div>
+    `;
+  }
+
+  function renderBoard(){
+    const container = document.getElementById('boardContainer');
+    let items = state.requests.filter(r=>{
+      const matchCat = state.filterCategory==='all' || r.category===state.filterCategory;
+      const matchVillage = state.filterVillage==='all' || r.village===state.filterVillage;
+      const hay = (r.name+' '+r.desc+' '+r.area+' '+r.village).toLowerCase();
+      const matchSearch = !state.search || hay.includes(state.search);
+      return matchCat && matchVillage && matchSearch;
+    });
+    items.sort((a,b)=>{
+      const order = {open:0, claimed:1, completed:2};
+      if(order[a.status] !== order[b.status]) return order[a.status]-order[b.status];
+      return b.createdAt - a.createdAt;
+    });
+
+    if(items.length === 0){
+      container.innerHTML = `
+        <div class="empty-state">
+          <h3>${state.requests.length===0 ? 'The board is empty' : 'No matching requests'}</h3>
+          <p>${state.requests.length===0 ? 'Be the first to pin a request for help.' : 'Try a different category or search term.'}</p>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = `<div class="board-grid">${items.map(cardHTML).join('')}</div>`;
+    renderStats();
+  }
+
+  function cardHTML(r){
+    const cat = catInfo(r.category);
+    const rot = rotFor(r.id);
+    const statusLabel = r.status==='open' ? 'Open' : r.status==='claimed' ? 'Help Offered' : 'Completed';
+    const statusClass = 'status-'+r.status;
+
+    let claimedBlock = '';
+    if(r.status !== 'open' && r.helperName){
+      claimedBlock = `<div class="claimed-tag">🤝 ${r.status==='completed' ? 'Was helped' : 'Being helped'} by <strong>${escapeHTML(r.helperName)}</strong></div>`;
+    }
+
+    let actions = '';
+    if(r.status === 'open'){
+      actions = `
+        <div class="note-actions">
+          <button class="btn-small btn-help" onclick="toggleOffer('${r.id}')">I can help</button>
+        </div>
+        <div class="inline-form" id="offer-${r.id}">
+          <input type="text" id="helper-name-${r.id}" placeholder="Your name" />
+          <input type="tel" id="helper-phone-${r.id}" placeholder="Your phone (optional)" />
+          <div class="row-btns">
+            <button type="button" class="confirm-offer" onclick="confirmOffer('${r.id}')">Send Offer</button>
+            <button type="button" class="cancel-offer" onclick="toggleOffer('${r.id}')">Cancel</button>
+          </div>
+        </div>`;
+    } else if(r.status === 'claimed'){
+      actions = `
+        <div class="note-actions">
+          <button class="btn-small btn-complete" onclick="markCompleted('${r.id}')">Mark Completed</button>
+        </div>`;
+    }
+
+    return `
+      <div class="note ${r.status==='completed'?'completed':''}" style="transform:rotate(${rot}deg);">
+        <div class="note-top">
+          <span class="cat-stamp" style="color:${cat.color}">${cat.icon} ${cat.label}</span>
+          <span class="status-badge ${statusClass}">${statusLabel}</span>
+        </div>
+        <span class="village-badge">📌 ${escapeHTML(r.village)}</span>
+        <h3>${escapeHTML(r.name)} needs help</h3>
+        <p class="note-desc">${escapeHTML(r.desc)}</p>
+        <div class="meta-row">
+          <span>📍 ${escapeHTML(r.area)}</span>
+          <span>⏱ ${escapeHTML(r.urgency)}</span>
+          ${r.budget ? `<span>💰 ${escapeHTML(r.budget)}</span>` : ''}
+          <span class="mono">${timeAgo(r.createdAt)}</span>
+        </div>
+        <div class="phone-row">
+          <span class="phone-display" data-full="${escapeHTML(r.phone)}" data-masked="${escapeHTML(maskPhone(r.phone))}">${escapeHTML(maskPhone(r.phone))}</span>
+          <button class="reveal-btn" onclick="revealPhone(this)">Show number</button>
+        </div>
+        ${claimedBlock}
+        ${actions}
+      </div>`;
+  }
+
+  function revealPhone(btn){
+    const span = btn.previousElementSibling;
+    const showing = span.textContent === span.dataset.full;
+    span.textContent = showing ? span.dataset.masked : span.dataset.full;
+    btn.textContent = showing ? 'Show number' : 'Hide number';
+  }
+
+  function toggleOffer(rid){
+    const el = document.getElementById('offer-'+rid);
+    el.classList.toggle('open');
+  }
+
+  async function confirmOffer(rid){
+    const nameEl = document.getElementById('helper-name-'+rid);
+    const name = nameEl.value.trim();
+    if(!name){ nameEl.focus(); return; }
+    const phone = document.getElementById('helper-phone-'+rid).value.trim();
+    const req = state.requests.find(r=>r.id===rid);
+    req.status = 'claimed';
+    req.helperName = name;
+    req.helperPhone = phone;
+    await saveRequests();
+    renderBoard();
+    showToast('Offer sent — the requester can now see your name.');
+  }
+
+  async function markCompleted(rid){
+    const req = state.requests.find(r=>r.id===rid);
+    req.status = 'completed';
+    await saveRequests();
+    renderBoard();
+    showToast('Marked as completed. Thank you!');
+  }
+
+  function escapeHTML(s){
+    const d = document.createElement('div');
+    d.textContent = s == null ? '' : s;
+    return d.innerHTML;
+  }
+
+  /* ---------- Modal / form ---------- */
+  function renderModalOptions(){
+    const catEl = document.getElementById('catSelect');
+    catEl.innerHTML = CATEGORIES.map(c => `<button type="button" class="cat-opt" data-key="${c.key}" onclick="selectCat('${c.key}')">${c.icon} ${c.label}</button>`).join('');
+    const urgEl = document.getElementById('urgencyRow');
+    urgEl.innerHTML = URGENCY.map(u => `<button type="button" data-u="${u}" onclick="selectUrgency('${u}')" class="${u===state.selectedUrgency?'selected':''}">${u}</button>`).join('');
+    const vEl = document.getElementById('f_village');
+    vEl.innerHTML = `<option value="" disabled selected>Choose your village</option>` +
+      VILLAGES.map(v => `<option value="${v}">${v}</option>`).join('');
+  }
+
+  function selectCat(key){
+    state.selectedCat = key;
+    document.querySelectorAll('.cat-opt').forEach(b=>b.classList.toggle('selected', b.dataset.key===key));
+  }
+  function selectUrgency(u){
+    state.selectedUrgency = u;
+    document.querySelectorAll('#urgencyRow button').forEach(b=>b.classList.toggle('selected', b.dataset.u===u));
+  }
+
+  function openModal(){
+    document.getElementById('overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    renderModalOptions();
+  }
+  function closeModal(){
+    document.getElementById('overlay').classList.remove('open');
+    document.body.style.overflow = '';
+    document.getElementById('requestForm').reset();
+    state.selectedCat = null;
+    state.selectedUrgency = 'This week';
+  }
+
+  async function submitRequest(e){
+    e.preventDefault();
+    if(!state.selectedCat){ showToast('Please choose a category.', true); return; }
+    const newReq = {
+      id: id(),
+      name: document.getElementById('f_name').value.trim(),
+      phone: document.getElementById('f_phone').value.trim(),
+      village: document.getElementById('f_village').value,
+      area: document.getElementById('f_area').value.trim(),
+      category: state.selectedCat,
+      desc: document.getElementById('f_desc').value.trim(),
+      urgency: state.selectedUrgency,
+      budget: document.getElementById('f_budget').value.trim(),
+      status: 'open',
+      helperName: null,
+      helperPhone: null,
+      createdAt: Date.now(),
+    };
+    state.requests.unshift(newReq);
+    await saveRequests();
+    closeModal();
+    renderChips();
+    renderBoard();
+    showToast('Your request has been pinned to the board!');
+  }
+
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+
+  renderChips();
+  renderVillageSelect();
+  loadRequests();
+</script>
+</body>
+</html>
