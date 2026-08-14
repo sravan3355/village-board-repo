@@ -452,6 +452,28 @@
     font-size:13px; display:flex; align-items:center; gap:6px;
   }
   .cat-opt.selected{ background:var(--primary); border-color:var(--primary); color:#fff; }
+
+  .sub-services{ margin-top:4px; }
+  .sub-group{
+    background:var(--surface-alt); border:1px solid var(--border); border-radius:10px;
+    padding:11px 12px; margin-top:10px;
+  }
+  .sub-group h5{
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+    color:var(--ink-soft); margin:0 0 8px;
+  }
+  .sub-chip-row{ display:flex; flex-wrap:wrap; gap:6px; }
+  .sub-chip{
+    border:1.5px solid var(--border); background:#fff; padding:6px 11px; border-radius:20px;
+    font-size:12.5px; color:var(--ink-soft); font-weight:500;
+  }
+  .sub-chip.selected{ background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700; }
+
+  .sub-tag-row{ display:flex; flex-wrap:wrap; gap:5px; margin:-4px 0 10px; }
+  .sub-tag{
+    font-size:11px; color:var(--ink-soft); background:var(--surface-alt);
+    padding:3px 8px; border-radius:20px;
+  }
   .urgency-row{ display:flex; gap:7px; }
   .urgency-row button{
     flex:1; border:1.5px solid var(--border); background:#fff; padding:8px 4px; border-radius:9px; font-size:12.5px; font-weight:600; color:var(--ink-soft);
@@ -645,6 +667,7 @@
       <div class="field">
         <label>What kind of help? (choose all that apply)</label>
         <div class="cat-select" id="catSelect"></div>
+        <div class="sub-services" id="subServicesArea"></div>
       </div>
       <div class="field">
         <label>Describe what you need</label>
@@ -678,10 +701,21 @@
     { key:'repair', label:'Repairs', icon:'🔧', color:'#5A5A2E' },
     { key:'other', label:'Other', icon:'📌', color:'#5B5540' },
   ];
+
+  const SUB_SERVICES = {
+    tractor: ['Ploughing', 'Harvesting', 'Seed Sowing', 'Land Leveling', 'Trolley / Transport', 'Spraying'],
+    gas: ['Petrol', 'Diesel', 'Gas Cylinder Refill', 'Lottery Tickets'],
+    cooking: ['Veg Cooking', 'Non-Veg Cooking', 'Festival / Event Cooking', 'Daily Meal Prep'],
+    laundry: ['Clothes Washing', 'Ironing', 'Dry Cleaning', 'Bedsheet / Linen Washing'],
+    kitchen: ['Dishwashing', 'Kitchen Cleaning', 'Utensil Organizing', 'Grocery Prep / Chopping'],
+    cleaning: ['Sweeping & Mopping', 'Bathroom Cleaning', 'Dusting', 'Deep Cleaning'],
+    repair: ['Electrical Repair', 'Plumbing', 'Carpentry', 'Appliance Repair'],
+  };
+
   const URGENCY = ['Today','This week','Flexible'];
   const VILLAGES = ['Upllor','Kammerpally','Thimmapur','Yergatle'];
 
-  let state = { requests: [], filterCategory:'all', filterVillage:'all', search:'', loading:true, selectedCats:[], selectedUrgency:'This week' };
+  let state = { requests: [], filterCategory:'all', filterVillage:'all', search:'', loading:true, selectedCats:[], selectedSubServices:{}, selectedUrgency:'This week' };
 
   function catInfo(key){ return CATEGORIES.find(c=>c.key===key) || CATEGORIES[CATEGORIES.length-1]; }
 
@@ -772,7 +806,8 @@
       const rCats = r.categories || (r.category ? [r.category] : []);
       const matchCat = state.filterCategory==='all' || rCats.includes(state.filterCategory);
       const matchVillage = state.filterVillage==='all' || r.village===state.filterVillage;
-      const hay = (r.name+' '+r.desc+' '+r.area+' '+r.village).toLowerCase();
+      const subText = Object.values(r.subServices || {}).flat().join(' ');
+      const hay = (r.name+' '+r.desc+' '+r.area+' '+r.village+' '+subText).toLowerCase();
       const matchSearch = !state.search || hay.includes(state.search);
       return matchCat && matchVillage && matchSearch;
     });
@@ -831,6 +866,11 @@
       return `<span class="cat-stamp" style="color:${c.color}">${c.icon} ${c.label}</span>`;
     }).join('');
 
+    const allSubServices = Object.values(r.subServices || {}).flat();
+    const subTagsHTML = allSubServices.length
+      ? `<div class="sub-tag-row">${allSubServices.map(s => `<span class="sub-tag">${escapeHTML(s)}</span>`).join('')}</div>`
+      : '';
+
     return `
       <div class="note ${r.status==='completed'?'completed':''}">
         <div class="note-top">
@@ -840,6 +880,7 @@
         <span class="village-badge">📌 ${escapeHTML(r.village)}</span>
         <h3>${escapeHTML(r.name)} needs help</h3>
         <p class="note-desc">${escapeHTML(r.desc)}</p>
+        ${subTagsHTML}
         <div class="meta-row">
           <span>📍 ${escapeHTML(r.area)}</span>
           <span>⏱ ${escapeHTML(r.urgency)}</span>
@@ -909,8 +950,37 @@
 
   function selectCat(key){
     const idx = state.selectedCats.indexOf(key);
-    if(idx === -1) state.selectedCats.push(key); else state.selectedCats.splice(idx,1);
+    if(idx === -1){
+      state.selectedCats.push(key);
+    } else {
+      state.selectedCats.splice(idx,1);
+      delete state.selectedSubServices[key];
+    }
     document.querySelectorAll('.cat-opt').forEach(b=>b.classList.toggle('selected', state.selectedCats.includes(b.dataset.key)));
+    renderSubServices();
+  }
+
+  function renderSubServices(){
+    const el = document.getElementById('subServicesArea');
+    const groups = state.selectedCats
+      .filter(key => SUB_SERVICES[key])
+      .map(key => {
+        const cat = catInfo(key);
+        const chosen = state.selectedSubServices[key] || [];
+        const chips = SUB_SERVICES[key].map(svc => `
+          <button type="button" class="sub-chip ${chosen.includes(svc)?'selected':''}" onclick="toggleSubService('${key}','${svc}')">${svc}</button>
+        `).join('');
+        return `<div class="sub-group"><h5>${cat.icon} ${cat.label} — pick specifics (optional)</h5><div class="sub-chip-row">${chips}</div></div>`;
+      }).join('');
+    el.innerHTML = groups;
+  }
+
+  function toggleSubService(catKey, svc){
+    if(!state.selectedSubServices[catKey]) state.selectedSubServices[catKey] = [];
+    const arr = state.selectedSubServices[catKey];
+    const idx = arr.indexOf(svc);
+    if(idx === -1) arr.push(svc); else arr.splice(idx,1);
+    renderSubServices();
   }
   function selectUrgency(u){
     state.selectedUrgency = u;
@@ -921,6 +991,8 @@
     document.getElementById('overlay').classList.add('open');
     document.body.style.overflow = 'hidden';
     renderModalOptions();
+    state.selectedSubServices = {};
+    document.getElementById('subServicesArea').innerHTML = '';
     state.capturedLat = null;
     state.capturedLng = null;
     document.getElementById('locStatus').textContent = '';
@@ -935,7 +1007,9 @@
     document.body.style.overflow = '';
     document.getElementById('requestForm').reset();
     document.getElementById('locStatus').textContent = '';
+    document.getElementById('subServicesArea').innerHTML = '';
     state.selectedCats = [];
+    state.selectedSubServices = {};
     state.selectedUrgency = 'This week';
     state.capturedLat = null;
     state.capturedLng = null;
@@ -960,6 +1034,7 @@
       village: document.getElementById('f_village').value,
       area: document.getElementById('f_area').value.trim(),
       categories: [...state.selectedCats],
+      subServices: JSON.parse(JSON.stringify(state.selectedSubServices)),
       desc: document.getElementById('f_desc').value.trim(),
       urgency: state.selectedUrgency,
       budget: document.getElementById('f_budget').value.trim(),
@@ -1093,6 +1168,7 @@
   window.setVillage = setVillage;
   window.onSearch = onSearch;
   window.selectCat = selectCat;
+  window.toggleSubService = toggleSubService;
   window.selectUrgency = selectUrgency;
   window.toggleOffer = toggleOffer;
   window.confirmOffer = confirmOffer;
