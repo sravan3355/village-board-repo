@@ -101,8 +101,55 @@
   .post-btn:active{ transform:translateY(1px); box-shadow:0 2px 0 #6e3218; }
   .post-btn svg{ width:16px; height:16px; }
 
+  .hamburger-btn{
+    position:absolute; top:22px; right:20px; z-index:20;
+    background:rgba(255,255,255,0.1);
+    border:1px solid rgba(255,255,255,0.25);
+    color:#F1ECDA;
+    border-radius:3px;
+    width:42px; height:38px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .hamburger-btn:hover{ background:rgba(255,255,255,0.18); }
+  .hamburger-btn svg{ width:20px; height:20px; }
+
+  .menu-dropdown{
+    position:absolute; top:66px; right:20px; z-index:30;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:5px;
+    box-shadow:0 14px 30px rgba(0,0,0,0.3);
+    padding:10px;
+    display:none;
+    min-width:200px;
+  }
+  .menu-dropdown.open{ display:block; }
+  .menu-group{ padding:8px 6px; }
+  .menu-group + .menu-group{ border-top:1px dashed var(--line); }
+  .menu-group h4{
+    font-family:'Space Mono', monospace;
+    font-size:10.5px; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--secondary); margin:2px 6px 6px;
+  }
+  .menu-group button{
+    display:block; width:100%; text-align:left;
+    background:none; border:none;
+    padding:7px 8px; border-radius:3px;
+    font-size:14px; color:var(--ink);
+  }
+  .menu-group button:hover{ background:var(--bg); color:var(--primary-dark); }
+  .menu-back{
+    font-family:'Space Mono', monospace !important;
+    font-size:11.5px !important;
+    color:var(--secondary) !important;
+    font-weight:700;
+    margin-bottom:4px;
+  }
+
   @media (max-width:640px){
     .post-btn{ position:static; margin-top:18px; width:100%; justify-content:center; }
+    .menu-dropdown{ right:12px; top:64px; }
+    .hamburger-btn{ right:12px; }
   }
 
   /* ---------- Controls ---------- */
@@ -137,6 +184,91 @@
     flex:0 0 auto;
     min-width:170px;
   }
+
+  .ad-banner{
+    max-width:1040px; margin:22px auto 0; padding:0 20px;
+  }
+  .ad-label{
+    display:block;
+    font-family:'Space Mono', monospace;
+    font-size:10px; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--ink-soft);
+    margin:0 0 5px 2px;
+  }
+  .ad-stage{
+    position:relative;
+    overflow:hidden;
+    min-height:78px;
+    background:linear-gradient(135deg, #FFF9E9, #FCF0D2);
+    border:1.5px dashed var(--accent);
+    border-radius:5px;
+  }
+
+  .ad-car{
+    position:absolute; top:50%; font-size:28px;
+    transform:translateY(-50%);
+    animation: driveAcross 9s ease-in-out infinite;
+  }
+  @keyframes driveAcross{
+    0%{ left:-10%; opacity:1; }
+    24%{ left:104%; opacity:1; }
+    26%{ opacity:0; left:104%; }
+    100%{ opacity:0; left:-10%; }
+  }
+
+  .ad-balloon{
+    position:absolute; bottom:14px; font-size:0; opacity:0;
+    animation: popBalloon 9s ease-out infinite;
+  }
+  .bln-1{ left:28%; animation-delay:0s; }
+  .bln-2{ left:48%; animation-delay:.25s; }
+  .bln-3{ left:68%; animation-delay:.5s; }
+  @keyframes popBalloon{
+    0%, 26%{ opacity:0; font-size:0px; transform:translateY(0) scale(0.3); }
+    31%{ opacity:1; font-size:26px; transform:translateY(-18px) scale(1.15); }
+    36%{ font-size:24px; transform:translateY(-24px) scale(1); }
+    43%{ opacity:1; font-size:24px; }
+    46%{ opacity:0; font-size:30px; transform:translateY(-26px) scale(1.6); }
+    100%{ opacity:0; font-size:0px; }
+  }
+
+  .ad-content{
+    position:relative; z-index:2;
+    height:100%;
+    padding:14px 18px;
+    display:flex; align-items:center; gap:14px;
+    opacity:0;
+    animation: fadeInAd 9s ease-in-out infinite;
+  }
+  @keyframes fadeInAd{
+    0%, 48%{ opacity:0; transform:translateY(8px); }
+    56%{ opacity:1; transform:translateY(0); }
+    94%{ opacity:1; transform:translateY(0); }
+    100%{ opacity:0; transform:translateY(-4px); }
+  }
+
+  .ad-icon{ font-size:26px; flex-shrink:0; }
+  .ad-text strong{
+    font-family:'Fraunces', serif; font-size:16.5px; color:var(--ink);
+    display:block; margin-bottom:2px;
+  }
+  .ad-text p{ font-size:13px; color:var(--ink-soft); margin:0; }
+
+  @media (prefers-reduced-motion: reduce){
+    .ad-car, .ad-balloon{ display:none; }
+    .ad-content{ animation:none; opacity:1; }
+  }
+
+  .refresh-btn{
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    color:var(--ink-soft);
+    border-radius:3px;
+    width:42px;
+    font-size:18px;
+    flex:0 0 auto;
+  }
+  .refresh-btn:hover{ color:var(--primary); border-color:var(--primary); }
 
   .village-badge{
     font-family:'Space Mono', monospace;
@@ -328,6 +460,10 @@
 <body>
 
 <header class="hero">
+  <button class="hamburger-btn" onclick="event.stopPropagation(); toggleMenu()" aria-label="Menu" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <div class="menu-dropdown" id="menuDropdown"></div>
   <div class="hero-inner">
     <p class="eyebrow">Community notice board</p>
     <h1>The Village Board</h1>
@@ -347,8 +483,26 @@
       <input id="searchInput" type="text" placeholder="Search requests, names, or areas..." oninput="onSearch(this.value)" />
     </div>
     <select id="villageSelect" class="village-select" onchange="setVillage(this.value)"></select>
+    <button type="button" class="refresh-btn" onclick="loadRequests()" title="Refresh board">↻</button>
   </div>
   <div class="chip-row" id="chipRow"></div>
+</div>
+
+<div class="ad-banner">
+  <span class="ad-label">Sponsored</span>
+  <div class="ad-stage">
+    <span class="ad-car">🚗</span>
+    <span class="ad-balloon bln-1">🎈</span>
+    <span class="ad-balloon bln-2">🎈</span>
+    <span class="ad-balloon bln-3">🎈</span>
+    <div class="ad-content">
+      <span class="ad-icon">📷</span>
+      <div class="ad-text">
+        <strong>Vamshi Krishna Photography</strong>
+        <p>Capturing weddings, functions & village moments</p>
+      </div>
+    </div>
+  </div>
 </div>
 
 <main>
@@ -414,25 +568,11 @@
 
 <div class="toast" id="toast"></div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-  // ---- PASTE YOUR FIREBASE CONFIG HERE (see setup instructions) ----
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const boardRef = doc(db, "board", "village-requests");
+<script>
 
   const CATEGORIES = [
     { key:'tractor', label:'Tractor & Farm Equipment', icon:'🚜', color:'#7A5A1E' },
+    { key:'gas', label:'Gas Station / Fuel', icon:'⛽', color:'#B5442E' },
     { key:'cooking', label:'Cooking Help', icon:'🍲', color:'#9C4A2B' },
     { key:'laundry', label:'Laundry & Washing', icon:'🧺', color:'#2E5C6E' },
     { key:'kitchen', label:'Kitchen Work', icon:'🍽️', color:'#6B4C8A' },
@@ -474,21 +614,25 @@
     setTimeout(()=>{ t.className='toast'; }, 2600);
   }
 
-  function loadRequests(){
-    onSnapshot(boardRef, (snap)=>{
-      state.requests = snap.exists() ? (snap.data().requests || []) : [];
-      state.loading = false;
-      renderBoard();
-    }, (err)=>{
-      console.error(err);
-      state.loading = false;
-      showToast('Could not connect to the board. Check your Firebase setup.', true);
-    });
+  async function loadRequests(){
+    try{
+      const res = await fetch('/api/requests');
+      state.requests = await res.json();
+    }catch(e){
+      state.requests = [];
+      showToast('Could not load the board. Try refreshing.', true);
+    }
+    state.loading = false;
+    renderBoard();
   }
 
   async function saveRequests(){
     try{
-      await setDoc(boardRef, { requests: state.requests });
+      await fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(state.requests)
+      });
     }catch(e){
       showToast('Could not save — please try again.', true);
     }
@@ -707,7 +851,110 @@
     showToast('Your request has been pinned to the board!');
   }
 
-  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+  const MENU_DATA = [
+    { group:'Home Service', items:[
+      { label:'Laundry' },
+      { label:'Washing Bowls' },
+      { label:'Cooking', options:['Veg','Non-Veg'] },
+      { label:'Cleaning House' },
+    ]},
+    { group:'Gas Station', items:[
+      { label:'Gas' },
+      { label:'Petrol' },
+      { label:'Diesel' },
+      { label:'Lottery' },
+    ]},
+    { group:'Car', items:[
+      { label:'Car Repair', options:['SUV','Sedan','Hatchback'] },
+      { label:'Oil Change', options:['SUV','Sedan','Hatchback'] },
+      { label:'Wheel Rotation', options:['SUV','Sedan','Hatchback'] },
+    ]},
+  ];
+  let menuState = { level:'root', pendingLabel:null };
+
+  function findMenuItem(label){
+    for(const g of MENU_DATA){ const it = g.items.find(i=>i.label===label); if(it) return it; }
+    return null;
+  }
+
+  function renderMenu(){
+    const el = document.getElementById('menuDropdown');
+    if(menuState.level === 'root'){
+      el.innerHTML = MENU_DATA.map(g => `
+        <div class="menu-group">
+          <h4>${g.group}</h4>
+          ${g.items.map(it => `<button onclick="event.stopPropagation(); menuItemClick('${it.label}')">${it.label}</button>`).join('')}
+        </div>`).join('');
+    } else {
+      const item = findMenuItem(menuState.pendingLabel);
+      el.innerHTML = `
+        <div class="menu-group">
+          <button class="menu-back" onclick="event.stopPropagation(); menuBack()">&larr; Back</button>
+          <h4>${menuState.pendingLabel}</h4>
+          ${item.options.map(opt => `<button onclick="event.stopPropagation(); menuOptionClick('${opt}')">${opt}</button>`).join('')}
+        </div>`;
+    }
+  }
+
+  function menuItemClick(label){
+    const item = findMenuItem(label);
+    if(item && item.options){
+      menuState.level = 'options';
+      menuState.pendingLabel = label;
+      renderMenu();
+    } else {
+      menuFilter(label);
+    }
+  }
+
+  function menuOptionClick(opt){
+    menuFilter(menuState.pendingLabel + ' ' + opt);
+  }
+
+  function menuBack(){
+    menuState.level = 'root';
+    menuState.pendingLabel = null;
+    renderMenu();
+  }
+
+  function toggleMenu(){
+    const menu = document.getElementById('menuDropdown');
+    const btn = document.querySelector('.hamburger-btn');
+    const willOpen = !menu.classList.contains('open');
+    if(willOpen){
+      menuState.level = 'root';
+      menuState.pendingLabel = null;
+      renderMenu();
+    }
+    menu.classList.toggle('open', willOpen);
+    btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+  }
+
+  function menuFilter(term){
+    document.getElementById('searchInput').value = term;
+    state.search = term.toLowerCase();
+    state.filterCategory = 'all';
+    renderChips();
+    renderBoard();
+    document.getElementById('menuDropdown').classList.remove('open');
+  }
+
+  document.addEventListener('click', (e)=>{
+    const menu = document.getElementById('menuDropdown');
+    const btn = document.querySelector('.hamburger-btn');
+    if(menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)){
+      menu.classList.remove('open');
+      menuState.level='root'; menuState.pendingLabel=null;
+    }
+  });
+
+  document.addEventListener('keydown', (e)=>{
+    if(e.key==='Escape'){
+      closeModal();
+      document.getElementById('menuDropdown').classList.remove('open');
+      menuState.level='root'; menuState.pendingLabel=null;
+    }
+  });
 
   window.openModal = openModal;
   window.closeModal = closeModal;
